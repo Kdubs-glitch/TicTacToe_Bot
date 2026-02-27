@@ -100,11 +100,9 @@ public class RobotV2 {
     public void update_Reward_Mem(int reward){// Needs to give +-1 to all moves that contributed to the win
         // decode Moves for game, quick maths gives 1-9, reward mem +-= 1 at that position
         int gameIndex = moveMemory.length - 1;
-        String[] movesMade = moveMemory[gameIndex];
-        for (int move = 0; move < movesMade.length; move++){
-            int decodedMove = decode_Move(movesMade[move]);
 
-            rewardMemory[moveMemory.length - 1][decodedMove] = reward;
+        for (int move = 0; move < numMovesMade; move++){
+            rewardMemory[gameIndex][move] = reward;
         }
         for (int i = 0; i < rewardMemory.length; i++){
             for (int k = 0; k < rewardMemory[i].length; k++){
@@ -119,11 +117,9 @@ public class RobotV2 {
         if (numMovesMade == 0){
             String[][] newMem = new String[moveMemory.length + 1][9];
             
-            for (int game = 0; game < moveMemory.length - 1; game++){
-                System.out.println(game);
+            for (int game = 0; game < moveMemory.length; game++){
                 newMem[game] = moveMemory[game];
             }
-            System.out.println("OMGGGG "+newMem[newMem.length - 1].length);
             newMem[newMem.length - 1][0] = move;
             moveMemory = newMem;
             for (int i = 0; i < moveMemory.length; i++){
@@ -156,7 +152,7 @@ public class RobotV2 {
             stateMemory = newMem;
             for (int i = 0; i < stateMemory.length; i++){
                 for (int k = 0; k < stateMemory[i].length; k++){
-                    System.out.println("I:K " +i+" : "+k+" STATEMEM\t" +stateMemory[i][k]);
+                    System.out.println(name + " I:K " +i+" : "+k+" STATEMEM\t" +stateMemory[i][k]);
                 }
             }
         } else {
@@ -165,7 +161,7 @@ public class RobotV2 {
             stateMemory[gameIndex][numMovesMade] = state;
             for (int i = 0; i < stateMemory.length; i++){
                 for (int k = 0; k < stateMemory[i].length; k++){
-                    System.out.println("I:K " +i+" : "+k+" STATEMEM\t" +stateMemory[i][k]);
+                    System.out.println(name + " I:K " +i+" : "+k+" STATEMEM\t" +stateMemory[i][k]);
                 }
             }
         }
@@ -259,6 +255,10 @@ public class RobotV2 {
                 if (rewardMemory[game][move] < 0){ // LOOOOOKK
                     System.out.println("rewardMemory[game][move]:   " + rewardMemory[game][move]);
                     continue;
+                }
+                
+                if (stateMemory[game][move] == null){
+                    break;
                 }
                 String previousMove = stateMemory[game][move].substring(move, move + 1);
                 String curMove = encodedBoard.substring(move, move + 1);

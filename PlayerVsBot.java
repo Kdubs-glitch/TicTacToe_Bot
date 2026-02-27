@@ -8,13 +8,13 @@ public class PlayerVsBot {
         String playerName = scanner.nextLine();
 
         Player human = new Player(playerName);
-        Robot bot = TrainRobot.train_Bot();
+        RobotV2 bot = TrainRobot.train_Bot();
 
         int humanWins = 0;
         int botWins = 0;
         for (int i = 0; i < 3; i++){
             String winner = HumanVsBotGameLoop.game_Loop(human, bot, scanner);
-            if (winner.equals(bot.getRoboNum())){
+            if (winner.equals(bot.getName())){
                 botWins++;
             } else if (winner.equals(playerName)){
                 humanWins++;
