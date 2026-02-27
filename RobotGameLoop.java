@@ -174,56 +174,60 @@ public class RobotGameLoop {
     }
 
 
-    public static int[] encode_Board(String[][] board){
-        int[] encoded_Board = new int[9];
+    public static String encode_Board(String[][] board){
+        String encoded_Board = "";
 
-        int index = 0;
         for (int col = 0; col < 3; col++){
             for (int row = 0; row < 3; row++){
                 if (board[col][row].isBlank()){
-                    encoded_Board[index] = 0;
+                    encoded_Board += "0";
                 } else if (board[col][row].equals("X")) {
-                    encoded_Board[index] = 1;
+                    encoded_Board += "1";
                 } else {
-                    encoded_Board[index] = -1;
+                    encoded_Board += "-1";
                 }
             }
         }
-
+        System.out.println("ENCODED BOARD: \t" + encoded_Board);
         return encoded_Board;
     }
 
 
-    public static String robo_Game_Loop(Robot[] players){
+    public static String robo_Game_Loop(RobotV2[] players){
         Random randint = new Random();
 
         String[][] board = {{"", "", ""}, {"", "", ""}, {"", "", ""}};
-        Robot player_One = players[0];
-        Robot player_Two = players[1];
+        RobotV2 player_One = players[0];
+        RobotV2 player_Two = players[1];
         String whoWon = checkWin(board);
         double entropy = 0.5;
  
-        Robot curPlayer = randint.nextInt(0, 2) == 0 ? player_One : player_Two;
+        RobotV2 curPlayer = randint.nextInt(0, 2) == 0 ? player_One : player_Two;
         String move = "";
+
+
+        player_One.fill_Reward_Mem();
+        player_Two.fill_Reward_Mem();
         
         while (whoWon.equals("No Win")){
+            String name = curPlayer.getName();
 
             move = curPlayer.get_Move(board, entropy);
-            while (is_Taken(board, move)){
-                move = curPlayer.get_Move(board, entropy);
-            }
-            String name = curPlayer.getRoboNum();
-            System.out.println("PLAYER#: " + name + " CHOSE MOVE:  " + move);
+            System.out.println(name + " CHOSE MOVE:   " + move);
             curPlayer.update_Move_Mem(move);
-            curPlayer.update_Reward_Mem(0);
             
-            updateBoard(board, move, curPlayer.getRoboNum());
+            
+            System.out.println("PLAYER#: " + name + " CHOSE MOVE:  " + move);
+            
+            updateBoard(board, move, curPlayer.getName());
+            
             curPlayer.update_State_Mem(encode_Board(board));
+            curPlayer.update_Moves_Made(); // HERE BC STATE MEMORY INDEX GETS FUCKED
 
             showBoard(board);
             whoWon = checkWin(board);
             
-            if (curPlayer.getRoboNum().equals("Bot1")){
+            if (curPlayer.getName().equals("Bot1")){
                 curPlayer = player_Two;
             } else {
                 curPlayer = player_One;
@@ -232,6 +236,8 @@ public class RobotGameLoop {
             entropy *= .99;
 
         }
+        player_One.reset_Moves_Made();
+        player_Two.reset_Moves_Made();
         
         if (whoWon.equals("Draw")){
             System.out.println("DRAW!!");

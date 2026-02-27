@@ -181,14 +181,14 @@ public class HumanVsBotGameLoop {
     }
 
 
-    public static String game_Loop(Player player_One, Robot player_Two, Scanner scanner){
+    public static String game_Loop(Player player_One, RobotV2 player_Two, Scanner scanner){
 
         Random randint = new Random();
         String p1Name = player_One.get_Player_Num();
 
-        String curPlayer = randint.nextInt(0, 2) == 0 ? p1Name : player_Two.getRoboNum();
+        String curPlayer = randint.nextInt(0, 2) == 0 ? p1Name : player_Two.getName();
         String playerOneName = curPlayer;
-        String playerTwoName = curPlayer.equals(p1Name) ? player_Two.getRoboNum() : p1Name;
+        String playerTwoName = curPlayer.equals(p1Name) ? player_Two.getName() : p1Name;
         String[] playerNames = {playerOneName, playerTwoName};
 
         String[][] board = {{"", "", ""}, {"", "", ""}, {"", "", ""}};

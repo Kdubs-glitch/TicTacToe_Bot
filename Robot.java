@@ -4,8 +4,8 @@ public class Robot {
     
     private Random random = new Random();
     private String roboNum = "";
-    private int[][] stateMemory = new int[0][9];
-    private String[] moveMemory = new String[0];
+    private String[][] stateMemory = new String[0][9];
+    private String[][] moveMemory = new String[0][9];
     private int[] rewardMemory = new int[0];
     private double[] weights = new double[9];
     private int lastGameEndPosition = rewardMemory.length;
@@ -21,11 +21,11 @@ public class Robot {
         return rewardMemory;
     }
 
-    public String[] getMove_Memory() {
+    public String[][] getMove_Memory() {
         return moveMemory;
     }
     
-    public int[][] getState_Memory(){
+    public String[][] getState_Memory(){
         return stateMemory;
     }
 
@@ -59,12 +59,12 @@ public class Robot {
 
 
     public void update_Move_Mem(String move){
-        String[] newMem = new String[moveMemory.length + 1];
+        String[][] newMem = new String[moveMemory.length + 1][9];
 
         for (int i = 0; i < moveMemory.length; i++){
             newMem[i] = moveMemory[i];
         }
-        newMem[newMem.length - 1] = move; 
+        newMem[newMem.length - 1][0] = move; // newMem[newMem.length - 1].length - 1
 
         moveMemory = newMem;
     }
@@ -83,21 +83,45 @@ public class Robot {
 
 
     public void update_Reward_Placeholders(int reward){
-
         for (int i = rewardMemory.length - 1; i >= lastGameEndPosition; i--){
             rewardMemory[i] = reward;
         }
     }
 
 
-    public void update_State_Mem(int[] state){
-        int[][] newMem = new int[stateMemory.length + 1][9];
+    public void update_State_Mem(String state, String[][] board){
+        int index = count_Moves_On_Board(board);
+        String[][] newMem = new String[stateMemory.length + 1][9];
 
         for (int i = 0; i < stateMemory.length; i++){
             newMem[i] = stateMemory[i];
         }
-        newMem[newMem.length - 1] = state;
+        newMem[newMem.length - 1][-1 + index] = state;
+        System.out.println(state + "\tSTATE!");
+        for (int g = 0; g < newMem.length; g++){
+            for (int k = 0; k < newMem[g].length; k++){
+                System.out.println(g+" :G " + k + " :K \t" + newMem[g][k]);
+            }
+        }
         stateMemory = newMem;
+    }
+
+
+    public int[] convert_State_to_Int(String[] gameStates){
+        int[] newStates = new int[gameStates.length];
+
+        for (int i = 0; i < gameStates.length; i++){
+            if (gameStates[i] == null){
+                break;
+            }
+            if (gameStates[i].equals("1")){
+                newStates[i] = 1;
+            } else if (gameStates[i].equals("-1")){
+                newStates[i] = -1;
+            }
+            System.out.println(newStates[i] + "dsfsf");
+        }
+        return newStates;
     }
 
 
@@ -126,54 +150,83 @@ public class Robot {
 
 
     public void learn(double lr) {
-        for (int game = 0; game < moveMemory.length; game++) {
-            int[] moveIndex = convert_Move(moveMemory[game]);
+        for (int move = 0; move < moveMemory[moveMemory.length - 1].length; move++) {
+            int[] moveIndex = convert_Move(moveMemory[moveMemory.length - 1][move]);
             int position = (moveIndex[0] * 3) + moveIndex[1];
-            weights[position] += lr * rewardMemory[game];
+            weights[position] += lr * rewardMemory[move];
         }
     }
 
 
-    public String most_Alike(String[][] board){
-        int[] encodedBoard = new int[9];
+    public int count_Moves_On_Board(String[][] board){
+        int count = 0;
+        for (int col = 0; col < 3; col++){
+            for (int row = 0; row < 3; row++){
+                if (!board[col][row].isBlank()){
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
 
-        int index = 0;
+
+    public String most_Alike(String[][] board){
+        String[] allMoves = {"a3", "b3", "c3", "a2", "b2", "c2", "a1", "b1", "c1"};
+        String encodedBoard = "";
+        int numMovesMade = count_Moves_On_Board(board);
+
+        
         for (int col = 0; col < 3; col++){
             for (int row = 0; row < 3; row++){
                 if (board[col][row].isBlank()){
-                    encodedBoard[index] = 0;
+                    encodedBoard += "0";
                 } else if (board[col][row].equals("X")) {
-                    encodedBoard[index] = 1;
+                    encodedBoard += "1";
                 } else {
-                    encodedBoard[index] = -1;
+                    encodedBoard += "-1";
                 }
             }
         }
 
-        int bestMove = -1;
         int similarity = 0;
         int bestSimilarity = 0;
+        String bestState = "";
         for (int game = 0; game < stateMemory.length; game++){
             if (rewardMemory[game] < 0){
                 continue;
             }
+            
             for (int move = 0; move < 9; move++){
-                if (stateMemory[game][move] == encodedBoard[move]){
-                    similarity++;
+                for(int position = 0; position < 9; position++){
+                    System.out.println("FUCK");
+                    if (stateMemory[game][move].substring(position, position + 1).equals(encodedBoard.substring(position, position + 1))){
+                        similarity++;
+                    }
                 }
-            }
-            if (similarity > bestSimilarity){
+                if (similarity > bestSimilarity){
                 bestSimilarity = similarity;
-                bestMove = game;
+                bestState = stateMemory[game][move];
             }
+            }
+
             similarity = 0;
+        }
+
+        
+        int bestMove = -1;
+        for (int move = numMovesMade; move < 9; move++){
+            if (bestState.substring(move, move + 1).equals("1")){
+                bestMove = move;
+                break;
+            }
         }
 
         if (bestMove == -1){
             return "-1";
         }
 
-        return moveMemory[bestMove];
+        return allMoves[bestMove];
     }
 
 
