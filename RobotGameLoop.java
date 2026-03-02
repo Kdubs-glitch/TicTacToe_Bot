@@ -184,7 +184,7 @@ public class RobotGameLoop {
                 } else if (board[col][row].equals("X")) {
                     encoded_Board += "1";
                 } else {
-                    encoded_Board += "-1";
+                    encoded_Board += "2";
                 }
             }
         }
@@ -200,7 +200,7 @@ public class RobotGameLoop {
         RobotV2 player_One = players[0];
         RobotV2 player_Two = players[1];
         String whoWon = checkWin(board);
-        double entropy = 0.5;
+        double entropy = 0.2;
  
         RobotV2 curPlayer = randint.nextInt(0, 2) == 0 ? player_One : player_Two;
         String move = "";
@@ -233,11 +233,9 @@ public class RobotGameLoop {
                 curPlayer = player_One;
             }
 
-            entropy *= .99;
+            entropy *= .5;
 
         }
-        player_One.reset_Moves_Made();
-        player_Two.reset_Moves_Made();
         
         if (whoWon.equals("Draw")){
             System.out.println("DRAW!!");

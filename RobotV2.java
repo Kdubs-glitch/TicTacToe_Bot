@@ -64,10 +64,9 @@ public class RobotV2 {
     // BEFORE MATCH
     public void fill_Reward_Mem(){
         int[][] newMem = new int[rewardMemory.length + 1][9];
+
         for (int i = 0; i < rewardMemory.length; i++){
-            for (int k = 0; k < rewardMemory[i].length; k++){
-                System.out.println(name + " REWARDS: " +"I:K " +i+" : "+k+"\t" +rewardMemory[i][k]);
-            }
+            newMem[i] = rewardMemory[i];
         }
         rewardMemory = newMem;
     } 
@@ -100,14 +99,9 @@ public class RobotV2 {
     public void update_Reward_Mem(int reward){// Needs to give +-1 to all moves that contributed to the win
         // decode Moves for game, quick maths gives 1-9, reward mem +-= 1 at that position
         int gameIndex = moveMemory.length - 1;
-
+        
         for (int move = 0; move < numMovesMade; move++){
             rewardMemory[gameIndex][move] = reward;
-        }
-        for (int i = 0; i < rewardMemory.length; i++){
-            for (int k = 0; k < rewardMemory[i].length; k++){
-                System.out.println(name + " REWARDS: " +"I:K " +i+" : "+k+"\t" +rewardMemory[i][k]);
-            }
         }
 
     }
@@ -122,21 +116,10 @@ public class RobotV2 {
             }
             newMem[newMem.length - 1][0] = move;
             moveMemory = newMem;
-            for (int i = 0; i < moveMemory.length; i++){
-                for (int k = 0; k < moveMemory[i].length; k++){
-                    System.out.println(name + " I:K " +i+" : "+k+" MOVEMEM\t" +moveMemory[i][k]);
-                }
-            }
         } else{
-            int gameIndex = moveMemory.length - 1;
-            System.out.println("OMGGGG2"+moveMemory[gameIndex].length);
-            moveMemory[gameIndex][numMovesMade] = move;
-            for (int i = 0; i < moveMemory.length; i++){
-                for (int k = 0; k < moveMemory[i].length; k++){
-                    System.out.println(name + " I:K " +i+" : "+k+"MOVEMEM \t" +moveMemory[i][k]);
-                }
-            }
 
+            int gameIndex = moveMemory.length - 1;
+            moveMemory[gameIndex][numMovesMade] = move;
         }
         
     }
@@ -150,25 +133,16 @@ public class RobotV2 {
             }
             newMem[newMem.length - 1][0] = state;
             stateMemory = newMem;
-            for (int i = 0; i < stateMemory.length; i++){
-                for (int k = 0; k < stateMemory[i].length; k++){
-                    System.out.println(name + " I:K " +i+" : "+k+" STATEMEM\t" +stateMemory[i][k]);
-                }
-            }
         } else {
             int gameIndex = stateMemory.length - 1;
 
             stateMemory[gameIndex][numMovesMade] = state;
-            for (int i = 0; i < stateMemory.length; i++){
-                for (int k = 0; k < stateMemory[i].length; k++){
-                    System.out.println(name + " I:K " +i+" : "+k+" STATEMEM\t" +stateMemory[i][k]);
-                }
-            }
         }
     }
      
 
     public String get_Random_Move(String[][] board){
+        System.out.println("RAND MOVE!");
         String[] allMoves = {"a3", "b3", "c3", "a2", "b2", "c2", "a1", "b1", "c1"};
         String randMove = allMoves[random.nextInt(0,9)];
 
@@ -201,11 +175,10 @@ public class RobotV2 {
                 } else if (board[col][row].equals("X")) {
                     encoded_Board += "1";
                 } else {
-                    encoded_Board += "-1";
+                    encoded_Board += "2";
                 }
             }
         }
-        System.out.println("FOR STATE ENCODED BOARD: \t" + encoded_Board);
         return encoded_Board;
     }
 
@@ -247,54 +220,68 @@ public class RobotV2 {
 
         int similarity = 0;
         int bestCount = 0;
-        String[] mostSimiliar = new String[0];
+        String mostSimiliar = "";
         int amtOfMovesInPreviouState = 0;
-        int amtOfMovesInState = get_Amt_Of_Moves(board);
+        
         for (int game = 0; game < stateMemory.length; game++){
             for (int move = 0; move < 9; move++){
-                if (rewardMemory[game][move] < 0){ // LOOOOOKK
-                    System.out.println("rewardMemory[game][move]:   " + rewardMemory[game][move]);
-                    continue;
-                }
-                
-                if (stateMemory[game][move] == null){
+                if (rewardMemory[game][move] < 0 || stateMemory[game][numMovesMade] == null){ 
                     break;
                 }
-                String previousMove = stateMemory[game][move].substring(move, move + 1);
+                
+                String previousMove = stateMemory[game][numMovesMade].substring(move, move + 1);
                 String curMove = encodedBoard.substring(move, move + 1);
-                amtOfMovesInPreviouState = !previousMove.isBlank() ? amtOfMovesInPreviouState++ : amtOfMovesInPreviouState;
-
-                if (!curMove.isBlank() && curMove.equals(previousMove)){
+                
+                
+                if (stateMemory[game][move] != null && !stateMemory[game][move].equals("000000000")){
+                    amtOfMovesInPreviouState++;
+                }                
+                if (curMove.equals(previousMove)){
                     similarity++;
                 }
             }
-            if (similarity > bestCount && amtOfMovesInPreviouState > amtOfMovesInState){
+            
+            if (similarity > bestCount && amtOfMovesInPreviouState > numMovesMade){
+                System.out.println("FOUND BEST MATCH!");
                 bestCount = similarity;
-                mostSimiliar = stateMemory[game];
+                mostSimiliar = stateMemory[game][numMovesMade];
+                System.out.println("\tMost Similiar:   " + mostSimiliar);
             }
+            similarity = 0;
+            amtOfMovesInPreviouState = 0;
         }
-        
+
         int bestMove = -1;
-        for (int index = amtOfMovesInState - 1; index < 9 - amtOfMovesInState; index++){
-            System.out.print("Indecies: " + index + ", ");
-            String curSubString = mostSimiliar[amtOfMovesInState].substring(index, index + 1);
-            if (curSubString.equals("1")){
+        for (int index = 0; index < 9; index++){
+            if (mostSimiliar.isBlank()){
+                break;
+            }
+            String curSubString = mostSimiliar.substring(index, index + 1);
+            if (curSubString.equals("1")){ // Bot 2 Will Always fail here; Possible fix give bots their own move placeholder "X"/"O"
+                if (is_Taken(board, allMoves[index])){
+                    System.out.println("TAKEN:\t" + allMoves[index]);
+                    continue;
+                }
                 bestMove = index;
             }
         }
 
-        String bestMoveIsTaken = "";
-        while (is_Taken(board, allMoves[bestMove])){
-            bestMoveIsTaken = get_Move(board, e);
-            System.out.println(bestMoveIsTaken);
-        }
-        if (!bestMoveIsTaken.isBlank()){
-            return bestMoveIsTaken;
-        }
-
         if (bestMove == -1){
+            System.out.println("NO BEST MOVE FOUND!");
             return get_Random_Move(board);
         }
+        
+        // String bestMoveIsTaken = "";
+        // if (is_Taken(board, allMoves[bestMove])){
+        //     while (is_Taken(board, bestMoveIsTaken)){
+        //         System.out.println("TAKEN:\t" + bestMoveIsTaken);
+        //         bestMoveIsTaken = get_Random_Move(board);
+        //     }
+        // }
+
+        // if (!bestMoveIsTaken.isBlank()){
+        //     return bestMoveIsTaken;
+        // }
 
         return allMoves[bestMove];
     }

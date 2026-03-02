@@ -6,7 +6,7 @@ public class TrainRobot {
         RobotV2 bot2 = new RobotV2("Bot2");
         RobotV2[] roboBitches = {bot1, bot2};
 
-        int iter = 10;
+        int iter = 1000;
         int n = 0;
         while (n < iter){
 
@@ -23,7 +23,9 @@ public class TrainRobot {
                 bot1.update_Total_Loses();
                 bot2.update_Total_Wins();
             }
-
+            
+            bot1.reset_Moves_Made();
+            bot2.reset_Moves_Made();
             n++;
         }
 
@@ -38,7 +40,7 @@ public class TrainRobot {
     public static void main(String[] args){
 
         RobotV2 bestBot = train_Bot();
-
+        System.out.println("WINNNNNNNNNNNNNNNNNNNNNNNNnn");
         System.out.println(bestBot.getName());
         System.out.println(bestBot.get_Total_Wins());
     }

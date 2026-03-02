@@ -199,7 +199,7 @@ public class HumanVsBotGameLoop {
         if (curPlayer.equals(playerOneName)){
             move = getMove(curPlayer, scanner);
         } else{
-            move = player_Two.get_Move(board, 0.05);
+            move = player_Two.get_Move(board, 0);
         }
         
         while (whoWon.equals("No Win")){
@@ -207,7 +207,7 @@ public class HumanVsBotGameLoop {
                 if (curPlayer.equals(playerOneName)){
                     move = getMove(curPlayer, scanner);
                 } else{
-                    move = player_Two.get_Move(board, 0.05);
+                    move = player_Two.get_Move(board, 0);
                 }
                 System.out.println(curPlayer + "  CHOSE:  " + move);
                 
